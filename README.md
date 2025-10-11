@@ -1,2 +1,2 @@
 # Bo-Lang
-A low-level imperative programming language
+A soon to be low-level imperative programming language
