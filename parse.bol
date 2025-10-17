@@ -1,0 +1,6 @@
+VAR:C c = "Char/String", 0
+VAR:S s = 16
+VAR:I i = 32
+VAR:L l = 64
+VAR:F f = 3.2
+VAR:D d = 6.4

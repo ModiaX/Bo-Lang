@@ -1,6 +1,8 @@
 format PE64 NX CONSOLE 6.0
 entry start
 
+BUFFER_SIZE equ 1024
+
 include 'idata.asm'
 include 'call64.asm'
 include 'console_handler.asm'
@@ -15,7 +17,7 @@ section '.data' data readable writable
 	file_length_outtxt dq 0
 	file_bytes_read dd 0
 	
-	input_buffer rb 26
+	input_buffer rb BUFFER_SIZE
 	index_pointer dq 0
 	
 	char db 0
@@ -23,9 +25,10 @@ section '.data' data readable writable
 	error_str db "Error", 0
 	success_str db 13, 10, "Success", 0
 	newline_str db 13, 10, 0
+	tab_str db 9
 	
 	var_index dq 0
-	var_text db "Indentifier: [VAR]"
+	var_text db "Identifier: [VAR]"
 	var_id rb 64
 	var_id_index dq 0
 	var_id_str db "Name: [", 0
@@ -37,7 +40,14 @@ section '.data' data readable writable
 	
 	out_format db "format PE64 NX CONSOLE 6.0", 13, 10
 	section_data db "section '.data' data readable writable", 13, 10
-	instruction_var db " dq "
+	instruction_var db " db "
+	
+	char_inst db " db "
+	short_inst db " dw "
+	int_inst db " dd "
+	long_inst db " dq "
+	float_inst db " dd "
+	double_inst db " dq "
 	
 	zero db "0", 0
 	one db "1", 0
@@ -47,6 +57,7 @@ section '.data' data readable writable
 	five db "5", 0
 	six db "6", 0
 	seven db "7", 0
+	eight db "8", 0
 	
 	temp rb 64
 
@@ -56,10 +67,11 @@ start:
 	file_init file_name_parsetxt, file_handle_parsetxt, "false"
 	file_init file_name_outtxt, file_handle_outtxt, "true"
 	
-	file_read file_handle_parsetxt, input_buffer, 26, file_bytes_read
-	write input_buffer, 26
+	file_read file_handle_parsetxt, input_buffer, BUFFER_SIZE, file_bytes_read
+	write input_buffer, BUFFER_SIZE
 	mov eax, [file_bytes_read]
 	mov [file_length_parsetxt], rax
+
 	
 	write newline_str, 2
 	
@@ -94,10 +106,12 @@ loop_buffer:
 	je var_six
 	cmp [var_index], 7
 	je var_seven
+	cmp [var_index], 8
+	je var_eight
 	
 	after_var:
 	mov [var_index], 0
-	
+	inc qword [index_pointer]
 	mov rbx, [index_pointer]
 	mov rax, [file_length_parsetxt]
 	cmp rbx, rax
@@ -129,20 +143,26 @@ var_two:
 
 var_three:
 	write three, 1
-	write var_text, 18
+	cmp byte [char], 58
+	je var_type
+	jmp after_var
+
+var_four:
+	write four, 1
+	write var_text, 17
 	write newline_str, 2
 	cmp byte [char], 32 ; Space
 	je inc_var
 	jmp after_var
 
-var_four:
+var_five:
 	; Identifier of variable
-	write four, 1
+	write five, 1
 	mov [var_id_index], 0
 	jmp var_id_loop
 
-var_five:
-	write five, 1
+var_six:
+	write six, 1
 	write var_id_str, 7
 	mov rax, [var_id_index]
 	mov byte [var_id + rax], 0
@@ -153,16 +173,16 @@ var_five:
 	je inc_var
 	jmp after_var
 
-var_six:
-	write six, 1
+var_seven:
+	write seven, 1
 	write var_equ_text, 20
 	write newline_str, 2
 	; Value of variable
 	mov [var_val_index], 0
 	jmp skip_val_spaces
 
-var_seven:
-	write seven, 1
+var_eight:
+	write eight, 1
 	write var_val_str, 9
 	mov rax, [var_val_index]
 	mov byte [var_val + rax], 0
@@ -171,9 +191,10 @@ var_seven:
 	write newline_str, 2
 	jmp var_finish
 
+
 var_finish:
 	; Console output
-	write var_text, 18
+	write var_text, 17
 	write var_id_str, 7
 	mov rax, [var_id_index]
 	write var_id, rax
@@ -187,6 +208,7 @@ var_finish:
 	
 	; File output
 	file_write file_handle_outtxt, section_data, 40
+	file_write file_handle_outtxt, tab_str, 1
 	file_write file_handle_outtxt, var_id, [var_id_index]
 	file_write file_handle_outtxt, instruction_var, 4
 	file_write file_handle_outtxt, var_val, [var_val_index]
@@ -201,7 +223,8 @@ skip_newlines_after_var:
 	je skip_crlf
 	cmp al, 10
 	je skip_crlf
-	jmp after_var
+	mov qword [var_index], 0
+    jmp loop_buffer
 
 skip_crlf:
 	inc qword [index_pointer]
@@ -215,6 +238,67 @@ skip_val_spaces:
     cmp byte [char], 32
     je skip_val_spaces
     jmp var_val_loop
+
+var_type:
+	inc qword [index_pointer]
+	mov rbx, [index_pointer]
+	movzx eax, byte [input_buffer + rbx]
+	mov [char], al
+	cmp byte [char], 67
+	je type_char
+	cmp byte [char], 83
+	je type_short
+	cmp byte [char], 73
+	je type_int
+	cmp byte [char], 76
+	je type_long
+	cmp byte [char], 70
+	je type_float
+	cmp byte [char], 68
+	je type_double
+	jmp after_var
+
+type_char:
+	mov eax, dword [char_inst]
+	mov dword [instruction_var], eax
+	inc qword [index_pointer]
+    inc qword [var_index]
+    jmp loop_buffer
+
+type_short:
+	mov eax, dword [short_inst]
+	mov dword [instruction_var], eax
+	inc qword [index_pointer]
+    inc qword [var_index]
+    jmp loop_buffer
+
+type_int:
+	mov eax, dword [int_inst]
+	mov dword [instruction_var], eax
+	inc qword [index_pointer]
+    inc qword [var_index]
+    jmp loop_buffer
+
+type_long:
+	mov eax, dword [long_inst]
+	mov dword [instruction_var], eax
+	inc qword [index_pointer]
+    inc qword [var_index]
+    jmp loop_buffer
+
+type_float:
+	mov eax, dword [float_inst]
+	mov dword [instruction_var], eax
+	inc qword [index_pointer]
+    inc qword [var_index]
+    jmp loop_buffer
+
+type_double:
+	mov eax, dword [double_inst]
+	mov dword [instruction_var], eax
+	inc qword [index_pointer]
+    inc qword [var_index]
+    jmp loop_buffer
 
 var_id_loop:
 	mov rbx, [index_pointer]
