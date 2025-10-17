@@ -1,1 +1,3 @@
-
+### Ignore Output Files ###
+*.exe
+out.asm
