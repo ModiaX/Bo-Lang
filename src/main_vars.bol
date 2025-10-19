@@ -1,0 +1,48 @@
+VAR:C suffix_asm = ".asm", 0
+VAR:C suffix_bol = ".bol", 0
+
+VAR:L suffix_pointer = 0
+VAR:L name_pointer = 0
+
+VAR:L file_handle_parsetxt = 0
+VAR:L file_handle_outtxt = 0
+VAR:L file_length_parsetxt = 0
+VAR:L file_length_outtxt = 0
+VAR:I file_bytes_read = 0
+
+VAR:L index_pointer = 0
+VAR:C char = 0
+VAR:C error_str = "Error", 0
+VAR:C error_file_str = "FError", 0
+VAR:C error_console_str = "CError", 0
+VAR:C success_str = 13, 10, "Success", 0
+VAR:C newline_str = 13, 10, 0
+VAR:C tab_str = 9
+
+VAR:L var_index = 0
+VAR:C var_text = "Identifier: [VAR]"
+VAR:L var_id_index = 0
+VAR:C var_id_str = "Name: [", 0
+VAR:C closing_sbracket = "]", 0
+VAR:C var_equ_text = "Operation: [Equals]", 0
+VAR:L var_val_index = 0
+VAR:C var_val_str = "Value: [", 0
+VAR:C section_data = "section '.data' data readable writable", 13, 10
+VAR:C instruction_var = " db "
+
+VAR:C char_inst = " db "
+VAR:C short_inst = " dw "
+VAR:C int_inst = " dd "
+VAR:C long_inst = " dq "
+VAR:C float_inst = " dd "
+VAR:C double_inst = " dq "
+
+VAR:C zero = "0", 0
+VAR:C one = "1", 0
+VAR:C two = "2", 0
+VAR:C three = "3", 0
+VAR:C four = "4", 0
+VAR:C five = "5", 0
+VAR:C six = "6", 0
+VAR:C seven = "7", 0
+VAR:C eight = "8", 0

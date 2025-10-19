@@ -1,72 +1,27 @@
 format PE64 NX CONSOLE 6.0
 entry start
 
-BUFFER_SIZE equ 1024
+BUFFER_SIZE equ 10000
+FORMAT_TXT equ 13, 10
+FORMAT_LENGTH equ 0
 
 include 'idata.asm'
 include 'call64.asm'
 include 'console_handler.asm'
 include 'file_handler.asm'
+include 'main_vars.asm'
 
-section '.data' data readable writable
-	suffix_asm db ".asm", 0
-	suffix_bol db ".bol", 0
-	
-	suffix_pointer dq 0
-	name_pointer dq 0
-	
+section '.data' data readable writable	
 	file_name_txt rb 128
 	file_name_parsetxt rb 128
 	file_name_outtxt rb 128
-	file_handle_parsetxt dq 0
-	file_handle_outtxt dq 0
-	file_length_parsetxt dq 0
-	file_length_outtxt dq 0
-	file_bytes_read dd 0
 	
 	input_buffer rb BUFFER_SIZE
-	index_pointer dq 0
-	
-	char db 0
-	
-	error_str db "Error", 0
-	error_file_str db "FError", 0
-	error_console_str db "CError", 0
-	success_str db 13, 10, "Success", 0
-	newline_str db 13, 10, 0
-	tab_str db 9
-	
-	var_index dq 0
-	var_text db "Identifier: [VAR]"
+
 	var_id rb 64
-	var_id_index dq 0
-	var_id_str db "Name: [", 0
-	closing_sbracket db "]", 0
-	var_equ_text db "Operation: [Equals]", 0
 	var_val rb 64
-	var_val_index dq 0
-	var_val_str db "Value: [", 0
 	
-	out_format db "format PE64 NX CONSOLE 6.0", 13, 10
-	section_data db "section '.data' data readable writable", 13, 10
-	instruction_var db " db "
-	
-	char_inst db " db "
-	short_inst db " dw "
-	int_inst db " dd "
-	long_inst db " dq "
-	float_inst db " dd "
-	double_inst db " dq "
-	
-	zero db "0", 0
-	one db "1", 0
-	two db "2", 0
-	three db "3", 0
-	four db "4", 0
-	five db "5", 0
-	six db "6", 0
-	seven db "7", 0
-	eight db "8", 0
+	out_format db FORMAT_TXT
 	
 	temp rb 64
 
@@ -95,7 +50,7 @@ start:
 
 	write newline_str, 2
 	
-	file_write file_handle_outtxt, out_format, 28
+	file_write file_handle_outtxt, out_format, FORMAT_LENGTH
 	call64 loop_buffer
 	
 	file_deinit [file_handle_parsetxt], [file_handle_outtxt]
